@@ -2,3 +2,5 @@ venv/
 my_env/
 hand_landmarker.task
 image.jpg
+__pycache__/
+*.pyc

@@ -62,7 +62,7 @@ def identify_joints(image_name: str):
   detector = vision.HandLandmarker.create_from_options(options)
 
   # STEP 3: Load the input image.
-  image = mp.Image.create_from_file("test_images/dumb_hand_sign.jpg")
+  image = mp.Image.create_from_file(image_name)
 
   # STEP 4: Detect hand landmarks from the input image.
   detection_result = detector.detect(image)

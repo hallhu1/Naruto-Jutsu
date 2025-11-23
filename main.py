@@ -1,4 +1,4 @@
 from joint_identifier import identify_joints
 
 
-identify_joints("test_images/dumb_hand_sign.jpg")
+identify_joints("WIN_20251123_16_21_03_Pro.jpg")
