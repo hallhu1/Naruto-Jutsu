@@ -51,30 +51,29 @@ def draw_landmarks_on_image(rgb_image, detection_result):
   return annotated_image
 
 
-# Show image test
-# img = cv2.imread("woman_hands.jpg")
-# cv2.imshow("Woman hands", img)
-# cv2.waitKey(0)
+def identify_joints(image_name: str):
+  """
+  Input name of image and then this will show it
+  """
+  # STEP 2: Create an HandLandmarker object.
+  base_options = python.BaseOptions(model_asset_path='hand_landmarker.task')
+  options = vision.HandLandmarkerOptions(base_options=base_options,
+                                        num_hands=2)
+  detector = vision.HandLandmarker.create_from_options(options)
 
-# STEP 2: Create an HandLandmarker object.
-base_options = python.BaseOptions(model_asset_path='hand_landmarker.task')
-options = vision.HandLandmarkerOptions(base_options=base_options,
-                                       num_hands=2)
-detector = vision.HandLandmarker.create_from_options(options)
+  # STEP 3: Load the input image.
+  image = mp.Image.create_from_file("test_images/dumb_hand_sign.jpg")
 
-# STEP 3: Load the input image.
-image = mp.Image.create_from_file("test_images/woman_hands.jpg")
+  # STEP 4: Detect hand landmarks from the input image.
+  detection_result = detector.detect(image)
+  image_data = image.numpy_view()
 
-# STEP 4: Detect hand landmarks from the input image.
-detection_result = detector.detect(image)
-image_data = image.numpy_view()
+  # If it’s RGBA (H, W, 4), drop the alpha channel
+  if image_data.ndim == 3 and image_data.shape[2] == 4:
+      image_data = cv2.cvtColor(image_data, cv2.COLOR_RGBA2RGB)
 
-# If it’s RGBA (H, W, 4), drop the alpha channel
-if image_data.ndim == 3 and image_data.shape[2] == 4:
-    image_data = cv2.cvtColor(image_data, cv2.COLOR_RGBA2RGB)
-
-# STEP 5: Process the classification result. In this case, visualize it.
-annotated_image = draw_landmarks_on_image(image_data, detection_result)
-cv2.imshow("Results", cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR))
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+  # STEP 5: Process the classification result. In this case, visualize it.
+  annotated_image = draw_landmarks_on_image(image_data, detection_result)
+  cv2.imshow("Results", cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR))
+  cv2.waitKey()
+  cv2.destroyAllWindows()

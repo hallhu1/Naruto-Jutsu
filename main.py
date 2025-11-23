@@ -1,5 +1,4 @@
-from mediapipe.tasks.python import vision
+from joint_identifier import identify_joints
 
-# Hello welcome to my game
-#Hi i am in the game now
-# Hey lets
+
+identify_joints("test_images/dumb_hand_sign.jpg")
