@@ -4,3 +4,4 @@ hand_landmarker.task
 image.jpg
 __pycache__/
 *.pyc
+.DS_Store
