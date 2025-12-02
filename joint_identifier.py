@@ -79,4 +79,4 @@ def identify_joints(image_name: str):
   cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-  identify_joints("test_images/chidori.jpg")
+  identify_joints("test_images/rasengan.jpg")
