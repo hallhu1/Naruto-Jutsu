@@ -1,7 +1,38 @@
-from scale import get_normalized_hand_landmarks
+import os
 import numpy as np
+from landmark_identifier import get_normalized_hand_landmarks
 
-A = get_normalized_hand_landmarks("test_images/dumb_hand_sign.jpg")
-B = get_normalized_hand_landmarks("test_images/IMG_5375.jpg")
-D = get_normalized_hand_landmarks("test_images/hudson_ino_jutsu.jpg")
+def load_groundtruths(folder_path="groundtruths"):
+    """
+    Load all .npy files from groundtruths folder.
+    
+    Returns:
+        dict mapping {filename_without_extension: numpy_array}
+    """
+    groundtruths = {}
+    
+    for fname in os.listdir(folder_path):
+        if fname.lower().endswith(".npy"):
+            name = os.path.splitext(fname)[0]   # strip ".npy"
+            path = os.path.join(folder_path, fname)
+            
+            try:
+                arr = np.load(path)
+                groundtruths[name] = arr
+            except Exception as e:
+                print(f"Warning: failed to load {fname}: {e}")
+
+    return groundtruths
+
+def find_jutsu(groundtruths, input_img):
+    query = get_normalized_hand_landmarks(input_img)
+
+    distances = {}
+    for name, gt_pose in groundtruths.items():
+        distances[name] = np.linalg.norm(query - gt_pose)
+    closest = min(distances, key=distances.get)
+    print("Closest sign:", closest, "distance:", distances[closest])
+
+
+
 
