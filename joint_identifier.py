@@ -77,3 +77,6 @@ def identify_joints(image_name: str):
   cv2.imshow("Results", cv2.cvtColor(annotated_image, cv2.COLOR_RGB2BGR))
   cv2.waitKey()
   cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+  identify_joints("test_images/chidori.jpg")

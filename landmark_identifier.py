@@ -1,12 +1,11 @@
 import mediapipe as mp
-
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import numpy as np
-
 import sys
 import os
 import contextlib
+import cv2
 
 
 # ---- Create the detector ONCE, globally ----
@@ -21,7 +20,7 @@ def _create_two_hand_detector(model_path: str = "hand_landmarker.task"):
 # Global singleton detector
 HAND_DETECTOR = _create_two_hand_detector()
 
-def get_normalized_hand_landmarks(image_path: str,
+def get_normalized_hand_landmarks(camera_frame,
                                   scale_to: float = 1.0,
                                   detector: vision.HandLandmarker = HAND_DETECTOR
                                   ) -> np.ndarray:
@@ -30,7 +29,12 @@ def get_normalized_hand_landmarks(image_path: str,
     of normalized coordinates in a LEFT-hand-centric coordinate system.
     """
     # ---- 1) Run MediaPipe detector (up to 2 hands) ----
-    mp_image = mp.Image.create_from_file(image_path)
+    frame_rgb = cv2.cvtColor(camera_frame, cv2.COLOR_BGR2RGB)
+
+    mp_image = mp.Image(
+        image_format=mp.ImageFormat.SRGB,
+        data=frame_rgb
+    )
     detection_result = detector.detect(mp_image)
 
     hand_landmarks_list = detection_result.hand_landmarks
