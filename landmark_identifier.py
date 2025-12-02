@@ -1,7 +1,13 @@
 import mediapipe as mp
+
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import numpy as np
+
+import sys
+import os
+import contextlib
+
 
 # ---- Create the detector ONCE, globally ----
 def _create_two_hand_detector(model_path: str = "hand_landmarker.task"):

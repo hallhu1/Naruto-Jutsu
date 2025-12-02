@@ -31,8 +31,12 @@ def find_jutsu(groundtruths, input_img):
     for name, gt_pose in groundtruths.items():
         distances[name] = np.linalg.norm(query - gt_pose)
     closest = min(distances, key=distances.get)
-    print("Closest sign:", closest, "distance:", distances[closest])
+    return closest, distances[closest]
 
-
+gt = load_groundtruths()
+while True:
+    test_image = input("Enter the image name: ")
+    closest, distance = find_jutsu(gt, "test_images/" + test_image + ".jpg")
+    print(closest)
 
 
