@@ -3,31 +3,27 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import numpy as np
 
-def get_normalized_hand_landmarks(image_path: str,
-                                 scale_to: float = 1.0,
-                                 model_path: str = "hand_landmarker.task") -> np.ndarray:
-    """
-    Detect exactly two hands (Left and Right) and return a single (42, 3) array
-    of normalized coordinates in a LEFT-hand-centric coordinate system.
-
-    Output layout:
-        rows 0–20  : Left hand landmarks (MediaPipe order)
-        rows 21–41 : Right hand landmarks (MediaPipe order)
-
-    Normalization:
-      - Translate so LEFT wrist is at the origin
-      - Scale so LEFT wrist -> LEFT middle MCP distance == scale_to
-      - Build a local frame from LEFT hand geometry and express BOTH hands in it
-      - If not exactly one Left and one Right hand are detected, raises ValueError.
-    """
-    # ---- 1) Run MediaPipe detector (up to 2 hands) ----
+# ---- Create the detector ONCE, globally ----
+def _create_two_hand_detector(model_path: str = "hand_landmarker.task"):
     base_options = python.BaseOptions(model_asset_path=model_path)
     options = vision.HandLandmarkerOptions(
         base_options=base_options,
         num_hands=2
     )
-    detector = vision.HandLandmarker.create_from_options(options)
+    return vision.HandLandmarker.create_from_options(options)
 
+# Global singleton detector
+HAND_DETECTOR = _create_two_hand_detector()
+
+def get_normalized_hand_landmarks(image_path: str,
+                                  scale_to: float = 1.0,
+                                  detector: vision.HandLandmarker = HAND_DETECTOR
+                                  ) -> np.ndarray:
+    """
+    Detect exactly two hands (Left and Right) and return a single (42, 3) array
+    of normalized coordinates in a LEFT-hand-centric coordinate system.
+    """
+    # ---- 1) Run MediaPipe detector (up to 2 hands) ----
     mp_image = mp.Image.create_from_file(image_path)
     detection_result = detector.detect(mp_image)
 
@@ -65,7 +61,7 @@ def get_normalized_hand_landmarks(image_path: str,
     INDEX_MCP = 5
     PINKY_MCP = 17
 
-    left_wrist = left_pts[WRIST].copy()
+    left_wrist = left_pts[WRIST]
     left_pts_centered = left_pts - left_wrist
     right_pts_centered = right_pts - left_wrist  # right hand relative to left wrist
 
@@ -85,28 +81,28 @@ def get_normalized_hand_landmarks(image_path: str,
     e1_norm = np.linalg.norm(e1)
     if e1_norm < 1e-6:
         e1_norm = 1e-6
-    e1 = e1 / e1_norm
+    e1 /= e1_norm
 
-    # across-palm (rough) direction: left index MCP -> left pinky MCP
+    # across-palm direction: left index MCP -> left pinky MCP
     across = left_pts_centered[PINKY_MCP] - left_pts_centered[INDEX_MCP]
     across_norm = np.linalg.norm(across)
     if across_norm < 1e-6:
         across_norm = 1e-6
-    across = across / across_norm
+    across /= across_norm
 
     # palm normal
     normal = np.cross(e1, across)
     n_norm = np.linalg.norm(normal)
     if n_norm < 1e-6:
         n_norm = 1e-6
-    normal = normal / n_norm
+    normal /= n_norm
 
     # e2: complete right-handed frame
     e2 = np.cross(normal, e1)
     e2_norm = np.linalg.norm(e2)
     if e2_norm < 1e-6:
         e2_norm = 1e-6
-    e2 = e2 / e2_norm
+    e2 /= e2_norm
 
     # Rotation matrix (3x3) with columns [e1, e2, normal]
     R = np.stack([e1, e2, normal], axis=1)
